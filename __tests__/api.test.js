@@ -172,4 +172,58 @@ describe('NC-news API', () => {
         });
     });
   });
+
+  describe('POST: /api/articles/:article_id/comments', () => {
+    test('201: adds a comment to a given article and returns newly created comment object', () => {
+      const requestBody = {
+        username: 'butter_bridge',
+        body: 'Some comment text',
+      };
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send(requestBody)
+        .expect(201)
+        .then((response) => {
+          const {
+            body: { comment },
+          } = response;
+          console.log(comment);
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              votes: 0,
+              created_at: expect.any(String),
+              author: 'butter_bridge',
+              body: 'Some comment text',
+              article_id: 1,
+            })
+          );
+        });
+    });
+    test('400: responds with an appropriate status and error message when provided with a bad request body (no comment body)', () => {
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send({
+          username: 'butter_bridge',
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('400: repsonds with an appropriate status and error message when attempting to create a comment with a user that does not exist', () => {
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send({
+          username: 'userThatDoesNotExist',
+          body: 'Some comment text',
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+  });
 });
