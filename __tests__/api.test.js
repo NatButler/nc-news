@@ -42,4 +42,44 @@ describe('NC-news API', () => {
         });
     });
   });
+  describe('GET: /api/articles/:article_id', () => {
+    test('200: returns a single article object, found by id', () => {
+      return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { article },
+          } = response;
+          expect(article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              author: expect.any(String),
+              title: expect.any(String),
+              body: expect.any(String),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+            })
+          );
+        });
+    });
+    test('404: sends an appropriate status and error message when given a valid but non-existent id', () => {
+      return request(app)
+        .get('/api/articles/999')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Article does not exist');
+        });
+    });
+    test('400: responds with an appropriate error message when given an invalid id', () => {
+      return request(app)
+        .get('/api/articles/not-an-id')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+  });
 });
