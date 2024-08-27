@@ -187,7 +187,6 @@ describe('NC-news API', () => {
           const {
             body: { comment },
           } = response;
-          console.log(comment);
           expect(comment).toEqual(
             expect.objectContaining({
               comment_id: expect.any(Number),
@@ -222,6 +221,80 @@ describe('NC-news API', () => {
         .expect(400)
         .then((response) => {
           const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+  });
+
+  describe('PATCH: /api/articles/:article_id', () => {
+    test('200: updates the specified article votes by the given amount', () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({
+          inc_votes: 5,
+        })
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { article },
+          } = response;
+          expect(article).toEqual(
+            expect.objectContaining({
+              article_id: 1,
+              author: expect.any(String),
+              title: expect.any(String),
+              body: expect.any(String),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: 105,
+              article_img_url: expect.any(String),
+            })
+          );
+        });
+    });
+    test('400: returns an appropriate status and error message when supplied with an invalid payload', () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({
+          votes: 10,
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('400: returns an appropriate status and error message when supplied with an invalid payload value', () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({
+          inc_votes: 'not-a-number',
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('404: sends an appropriate status and error message when given a valid but non-existent id', () => {
+      return request(app)
+        .patch('/api/articles/999')
+        .send({
+          inc_votes: 5,
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Not found');
+        });
+    });
+    test('400: responds with an appropriate error message when given an invalid id', () => {
+      return request(app)
+        .patch('/api/articles/not-an-id')
+        .send({
+          inc_votes: 5,
+        })
+        .expect(400)
+        .then(({ body }) => {
           expect(body.msg).toBe('Bad request');
         });
     });
