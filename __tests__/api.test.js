@@ -21,6 +21,7 @@ describe('NC-news API', () => {
         });
     });
   });
+
   describe('GET: /api/topics', () => {
     test('200: returns all topics in an array of objects', () => {
       return request(app)
@@ -42,6 +43,7 @@ describe('NC-news API', () => {
         });
     });
   });
+
   describe('GET: /api/articles/:article_id', () => {
     test('200: returns a single article object, found by id', () => {
       return request(app)
@@ -82,6 +84,7 @@ describe('NC-news API', () => {
         });
     });
   });
+
   describe('GET: /api/articles', () => {
     test('200: returns all articles in an array of objects, sorted by date in descending order', () => {
       return request(app)
@@ -110,6 +113,62 @@ describe('NC-news API', () => {
             key: 'created_at',
             descending: true,
           });
+        });
+    });
+  });
+
+  describe('GET: /api/articles/article_id/comments', () => {
+    test('200: returns all comments for a specific article as an array of objects', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { comments },
+          } = response;
+          expect(comments).toHaveLength(11);
+          comments.forEach((comment) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                comment_id: expect.any(Number),
+                votes: expect.any(Number),
+                created_at: expect.any(String),
+                author: expect.any(String),
+                body: expect.any(String),
+                article_id: expect.any(Number),
+              })
+            );
+          });
+        });
+    });
+    test('200: returns an array of comments ordered by created_at in descending order', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { comments },
+          } = response;
+          expect(comments).toBeSorted({
+            key: 'created_at',
+            descending: true,
+          });
+        });
+    });
+    test('404: sends an appropriate status and error message when given a valid but non-existent id', () => {
+      return request(app)
+        .get('/api/articles/999/comments')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Not found');
+        });
+    });
+    test('400: responds with an appropriate error message when given an invalid id', () => {
+      return request(app)
+        .get('/api/articles/not-an-id/comments')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
         });
     });
   });
