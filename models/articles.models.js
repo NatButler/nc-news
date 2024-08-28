@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const { checkExists } = require('./utils');
 
 exports.selectArticleById = (article_id) => {
   return db
@@ -11,9 +12,10 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectArticles = (sort_by = 'created_at', order = 'DESC') => {
+exports.selectArticles = (sort_by = 'created_at', order = 'DESC', topic) => {
   let queryStr =
-    'SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id) AS comment_count FROM articles JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id';
+    'SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id) AS comment_count FROM articles LEFT OUTER JOIN comments ON articles.article_id = comments.article_id';
+  const queryVals = [];
   const validColumns = [
     'article_id',
     'author',
@@ -24,6 +26,15 @@ exports.selectArticles = (sort_by = 'created_at', order = 'DESC') => {
     'comment_count',
   ];
   const validOrdering = ['ASC', 'DESC'];
+  const queryPromises = [];
+
+  if (topic) {
+    queryStr += ' WHERE articles.topic = $1';
+    queryVals.push(topic);
+    queryPromises.push(checkExists('topics', 'slug', topic));
+  }
+
+  queryStr += ' GROUP BY articles.article_id';
 
   if (!validColumns.includes(sort_by)) {
     return Promise.reject({ status: 400, msg: 'Invalid request' });
@@ -37,8 +48,12 @@ exports.selectArticles = (sort_by = 'created_at', order = 'DESC') => {
     queryStr += ` ${order}`;
   }
 
-  return db.query(queryStr).then(({ rows }) => {
-    return rows;
+  queryPromises.push(db.query(queryStr, queryVals));
+  return Promise.all(queryPromises).then((results) => {
+    if (queryPromises.length === 1) {
+      return results[0].rows;
+    }
+    return results[1].rows;
   });
 };
 

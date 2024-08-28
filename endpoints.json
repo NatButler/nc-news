@@ -10,8 +10,8 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles, with sorting/ordering available as optional query params",
-    "queries": ["sort_by", "order"],
+    "description": "serves an array of all articles, with sorting/ordering available as optional query params along with topic, which also adds filtering as an optional query param",
+    "queries": ["sort_by", "order", "topic"],
     "exampleResponse": {
       "articles": [
         {
