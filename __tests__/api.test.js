@@ -94,6 +94,7 @@ describe('NC-news API', () => {
           const {
             body: { articles },
           } = response;
+          expect(articles).toHaveLength(13);
           articles.forEach((article) => {
             expect(article).not.toHaveProperty('body');
             expect(article).toEqual(
@@ -184,6 +185,35 @@ describe('NC-news API', () => {
           expect(articles).toBeSorted({
             key: 'topic',
           });
+        });
+    });
+    test('200: accept topic query to filter the response by topic', () => {
+      return request(app)
+        .get('/api/articles?topic=cats')
+        .then((response) => {
+          const {
+            body: { articles },
+          } = response;
+          expect(articles).toHaveLength(1);
+        });
+    });
+    test('200: returns an empty array if topic is valid, but no match on any articles', () => {
+      return request(app)
+        .get('/api/articles?topic=paper')
+        .then((response) => {
+          const {
+            body: { articles },
+          } = response;
+          expect(articles).toHaveLength(0);
+        });
+    });
+    test('404: topic supplied uses valid syntax but no articles found', () => {
+      return request(app)
+        .get('/api/articles?topic=3')
+        .expect(404)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Resource not found');
         });
     });
   });
