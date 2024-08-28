@@ -115,6 +115,77 @@ describe('NC-news API', () => {
           });
         });
     });
+    test('200: accepts a sort_by query, and order the response by the given column name by default in descending order', () => {
+      return request(app)
+        .get('/api/articles?sort_by=author')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { articles },
+          } = response;
+          articles.forEach((article) => {
+            expect(article).toEqual(
+              expect.objectContaining({
+                author: expect.any(String),
+                title: expect.any(String),
+                article_id: expect.any(Number),
+                topic: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String),
+                comment_count: expect.any(String),
+              })
+            );
+          });
+          expect(articles).toBeSorted({
+            key: 'author',
+            descending: true,
+          });
+        });
+    });
+    test('400: reject if sort_by value is not valid/accepted', () => {
+      return request(app)
+        .get('/api/articles?sort_by=body')
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Invalid request');
+        });
+    });
+    test('200: accepts order query to specify ascending/descending order of response array', () => {
+      return request(app)
+        .get('/api/articles?order=asc')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { articles },
+          } = response;
+          expect(articles).toBeSorted({
+            key: 'created_at',
+          });
+        });
+    });
+    test('400: reject if order value is not valid/accepted', () => {
+      return request(app)
+        .get('/api/articles?order=up')
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Invalid request');
+        });
+    });
+    test('200: can chain sort_by and order queries', () => {
+      return request(app)
+        .get('/api/articles?sort_by=topic&order=asc')
+        .then((response) => {
+          const {
+            body: { articles },
+          } = response;
+          expect(articles).toBeSorted({
+            key: 'topic',
+          });
+        });
+    });
   });
 
   describe('GET: /api/articles/article_id/comments', () => {
