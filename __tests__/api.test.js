@@ -446,4 +446,32 @@ describe('NC-news API', () => {
         });
     });
   });
+
+  describe('GET /api/users/:username', () => {
+    test('200: responds with a user object', () => {
+      return request(app)
+        .get('/api/users/butter_bridge')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { user },
+          } = response;
+          expect(user).toEqual(
+            expect.objectContaining({
+              username: 'butter_bridge',
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            })
+          );
+        });
+    });
+    test('404: sends an appropriate status and error message when given a valid but non-existent username', () => {
+      return request(app)
+        .get('/api/users/non_existent_username')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('User does not exist');
+        });
+    });
+  });
 });
