@@ -1,6 +1,9 @@
 name: Test and deploy
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -32,3 +35,4 @@ jobs:
     steps:
       - name: Deploy to Render
         run: curl ${{secrets.DEPLOY_HOOK_URL}}
+        if: github.ref = 'refs/heads/main'
