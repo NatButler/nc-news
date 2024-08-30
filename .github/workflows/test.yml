@@ -1,7 +1,7 @@
-name: Test and deploy
+name: Test
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -26,10 +26,3 @@ jobs:
         run: npm ci
       - name: Run tests
         run: PGDATABASE=my_db PGUSER=test_user PGPASSWORD=test_pw npm t
-  deploy:
-    needs: Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Render
-        run: curl ${{secrets.DEPLOY_HOOK_URL}}
-        if: github.ref == 'refs/heads/main'
