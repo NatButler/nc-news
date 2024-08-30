@@ -35,4 +35,4 @@ jobs:
     steps:
       - name: Deploy to Render
         run: curl ${{secrets.DEPLOY_HOOK_URL}}
-        if: github.ref = 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
