@@ -257,12 +257,23 @@ describe('NC-news API', () => {
           });
         });
     });
+    test('200: returns an empty array when an article exists, but has no comments', () => {
+      return request(app)
+        .get('/api/articles/2/comments')
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { comments },
+          } = response;
+          expect(comments).toEqual([]);
+        });
+    });
     test('404: sends an appropriate status and error message when given a valid but non-existent id', () => {
       return request(app)
         .get('/api/articles/999/comments')
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe('Not found');
+          expect(body.msg).toBe('Resource not found');
         });
     });
     test('400: responds with an appropriate error message when given an invalid id', () => {
