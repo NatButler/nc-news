@@ -116,5 +116,18 @@
         "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
       }
     }
+  },
+  "PACTH /api/comments/:comment_id": {
+    "description": "updates a specific comments votes field and returns the updated comment",
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 19,
+        "body": "Some comment text",
+        "article_id": 1,
+        "author": "butter_bridge",
+        "votes": 1,
+        "created_at": "2024-08-27T14:21:46.214Z"
+      }
+    }
   }
 }

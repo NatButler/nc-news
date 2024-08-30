@@ -424,6 +424,76 @@ describe('NC-news API', () => {
     });
   });
 
+  describe('PATCH: /api/comments/:comment_id', () => {
+    test('200: updates the specified comment votes by the given amount', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: 1 })
+        .expect(200)
+        .then((response) => {
+          const {
+            body: { comment },
+          } = response;
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: 1,
+              votes: 17,
+              created_at: expect.any(String),
+              author: 'butter_bridge',
+              body: expect.any(String),
+              article_id: expect.any(Number),
+            })
+          );
+        });
+    });
+    test('400: returns an appropriate status and error message when supplied with an invalid payload', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({
+          votes: 10,
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('400: returns an appropriate status and error message when supplied with an invalid payload value', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({
+          inc_votes: 'not-a-number',
+        })
+        .expect(400)
+        .then((response) => {
+          const { body } = response;
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+    test('404: sends an appropriate status and error message when given a valid but non-existent id', () => {
+      return request(app)
+        .patch('/api/comments/999')
+        .send({
+          inc_votes: 5,
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Not found');
+        });
+    });
+    test('400: responds with an appropriate error message when given an invalid id', () => {
+      return request(app)
+        .patch('/api/comments/not-an-id')
+        .send({
+          inc_votes: 5,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad request');
+        });
+    });
+  });
+
   describe('GET: /api/users', () => {
     test('200: responds with an array of user objects', () => {
       return request(app)
